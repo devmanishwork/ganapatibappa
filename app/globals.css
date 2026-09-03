@@ -1,63 +1,119 @@
 @import "tailwindcss";
-
 @reference "tailwindcss";
 
+/* ── Fonts ─────────────────────────────────────────── */
 :root {
-  --saffron: #FF6B00;
-  --gold: #FFB300;
-  --deep-orange: #E65100;
-  --cream: #FFF8F0;
-  --dark: #1A0A00;
+  --font-space: var(--font-space, 'Space Grotesk', sans-serif);
+  --font-deva:  var(--font-devanagari, 'Noto Serif Devanagari', serif);
+
+  /* Brand colours */
+  --saffron:      #F4600C;
+  --saffron-dark: #C44A06;
+  --saffron-light:#FFF0E6;
+  --gold:         #E8A800;
+  --gold-light:   #FFF8E0;
+  --vermillion:   #CC2200;
+  --cream:        #FFFBF5;
+  --ink:          #0F0A00;
+  --muted:        #6B5744;
+  --border:       #E8D5C0;
 }
+
+/* ── Base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  background-color: var(--cream);
-  color: var(--dark);
+  font-family: var(--font-space, 'Space Grotesk', sans-serif);
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Marathi text uses Devanagari font */
+.font-marathi {
+  font-family: var(--font-deva);
+}
+
+/* ── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--saffron); border-radius: 99px; }
+
+/* ── Buttons ────────────────────────────────────────── */
 @layer components {
-  .btn-saffron {
-    @apply bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+
+  /* Primary — saffron fill */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 font-bold tracking-wide
+           px-6 py-3 rounded-xl transition-all duration-150 select-none
+           bg-orange-600 text-white
+           border-2 border-orange-700
+           shadow-[4px_4px_0px_#7C2D00]
+           hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#7C2D00]
+           active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
   }
 
-  .btn-gold {
-    @apply bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 shadow-md;
-  }
-
+  /* WhatsApp */
   .btn-whatsapp {
-    @apply bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 justify-center;
+    @apply inline-flex items-center justify-center gap-2 font-bold tracking-wide
+           px-5 py-3 rounded-xl transition-all duration-150 select-none w-full
+           bg-green-500 text-white
+           border-2 border-green-700
+           shadow-[4px_4px_0px_#14532D]
+           hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#14532D]
+           active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
   }
 
-  .card-murti {
-    @apply bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-orange-100 hover:-translate-y-1;
+  /* Ghost */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 font-semibold
+           px-5 py-2.5 rounded-xl transition-all duration-150
+           border-2 border-orange-300 text-orange-700
+           hover:bg-orange-50;
   }
 
+  /* ── Product Card ─────────────────────────────── */
+  .murti-card {
+    @apply bg-white rounded-2xl overflow-hidden flex flex-col
+           border-2 border-stone-200
+           shadow-[6px_6px_0px_#D4B896]
+           transition-all duration-200
+           hover:shadow-[8px_8px_0px_#C4956A]
+           hover:-translate-y-0.5 hover:-translate-x-0.5;
+  }
+
+  /* ── Status badges ────────────────────────────── */
   .badge-available {
-    @apply bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200;
+    @apply inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider
+           px-2.5 py-1 rounded-full
+           bg-emerald-500 text-white;
   }
 
-  .badge-outofstock {
-    @apply bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full border border-red-200;
+  .badge-sold {
+    @apply inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider
+           px-2.5 py-1 rounded-full
+           bg-stone-700 text-stone-200;
   }
-}
 
-/* Decorative divider */
-.om-divider {
-  text-align: center;
-  color: #FF6B00;
-  font-size: 1.5rem;
-  letter-spacing: 0.5rem;
-  opacity: 0.4;
-}
+  /* ── Admin card ───────────────────────────────── */
+  .admin-card {
+    @apply bg-white rounded-xl border-2 border-stone-200 p-4
+           shadow-[4px_4px_0px_#D4B896]
+           transition-shadow hover:shadow-[6px_6px_0px_#C4956A];
+  }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #FFF8F0;
-}
-::-webkit-scrollbar-thumb {
-  background: #FF6B00;
-  border-radius: 3px;
+  /* ── Input ────────────────────────────────────── */
+  .field {
+    @apply w-full border-2 border-stone-300 rounded-xl px-4 py-2.5 text-sm font-medium
+           bg-white text-stone-800 placeholder:text-stone-400
+           focus:outline-none focus:border-orange-500 focus:ring-0
+           transition-colors duration-150;
+  }
+
+  /* ── Section label ────────────────────────────── */
+  .section-label {
+    @apply text-xs font-bold uppercase tracking-[0.15em] text-orange-600;
+  }
 }

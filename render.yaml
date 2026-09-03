@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ganapati-stall
+    runtime: node
+    plan: free
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: mkdir -p /data/uploads && ln -sfn /data/uploads ./public/uploads && npx prisma db push && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:/data/prod.db
+      - key: ADMIN_PASSWORD
+        value: ganesh123
+    disk:
+      name: ganapati-data
+      mountPath: /data
+      sizeGB: 1

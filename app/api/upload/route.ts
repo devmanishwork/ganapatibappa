@@ -25,12 +25,16 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
+    // On Render: UPLOAD_DIR=/data/uploads (persistent disk, symlinked to public/uploads)
+    // Locally: falls back to public/uploads
+    const uploadsDir = process.env.UPLOAD_DIR
+      ? path.resolve(process.env.UPLOAD_DIR)
+      : path.join(process.cwd(), 'public', 'uploads')
+
     await mkdir(uploadsDir, { recursive: true })
 
     // Generate unique filename
-    const ext = file.name.split('.').pop()
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const filename = `murti_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
     const filepath = path.join(uploadsDir, filename)
 
