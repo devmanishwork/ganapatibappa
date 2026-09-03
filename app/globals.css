@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@reference "tailwindcss";
+
+:root {
+  --saffron: #FF6B00;
+  --gold: #FFB300;
+  --deep-orange: #E65100;
+  --cream: #FFF8F0;
+  --dark: #1A0A00;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--dark);
+}
+
+@layer components {
+  .btn-saffron {
+    @apply bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+  }
+
+  .btn-gold {
+    @apply bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 shadow-md;
+  }
+
+  .btn-whatsapp {
+    @apply bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 justify-center;
+  }
+
+  .card-murti {
+    @apply bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-orange-100 hover:-translate-y-1;
+  }
+
+  .badge-available {
+    @apply bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200;
+  }
+
+  .badge-outofstock {
+    @apply bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full border border-red-200;
+  }
+}
+
+/* Decorative divider */
+.om-divider {
+  text-align: center;
+  color: #FF6B00;
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+  opacity: 0.4;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF8F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF6B00;
+  border-radius: 3px;
+}

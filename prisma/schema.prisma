@@ -1,0 +1,24 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Murti {
+  id          Int      @id @default(autoincrement())
+  name        String
+  nameMarathi String?
+  description String?
+  size        String
+  price       Float
+  imageUrl    String
+  status      String   @default("AVAILABLE") // AVAILABLE or OUT_OF_STOCK
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
