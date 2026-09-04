@@ -5,44 +5,38 @@ import path from 'path'
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
-    const file = formData.get('file') as File
+    const files = formData.getAll('file') as File[]
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: 'No files uploaded' }, { status: 400 })
     }
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Only JPG, PNG, WEBP allowed' }, { status: 400 })
-    }
+    const urls: string[] = []
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large. Max 5MB.' }, { status: 400 })
-    }
-
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    // On Render: UPLOAD_DIR=/data/uploads (persistent disk, symlinked to public/uploads)
-    // Locally: falls back to public/uploads
     const uploadsDir = process.env.UPLOAD_DIR
       ? path.resolve(process.env.UPLOAD_DIR)
       : path.join(process.cwd(), 'public', 'uploads')
-
     await mkdir(uploadsDir, { recursive: true })
 
-    // Generate unique filename
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const filename = `murti_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
-    const filepath = path.join(uploadsDir, filename)
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) continue
+      if (file.size > 5 * 1024 * 1024) continue
 
-    await writeFile(filepath, buffer)
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const filename = `img_${Date.now()}_${Math.random().toString(36).substr(2, 7)}.${ext}`
+      await writeFile(path.join(uploadsDir, filename), buffer)
+      urls.push(`/uploads/${filename}`)
+    }
 
-    return NextResponse.json({ url: `/uploads/${filename}` })
-  } catch (error) {
-    console.error('Upload error:', error)
+    if (urls.length === 0) return NextResponse.json({ error: 'No valid images' }, { status: 400 })
+
+    // Return single URL for backwards compat, plus array
+    return NextResponse.json({ url: urls[0], urls })
+  } catch (e) {
+    console.error('Upload error:', e)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
   }
 }

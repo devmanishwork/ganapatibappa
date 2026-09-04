@@ -2,155 +2,211 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import AdminNav from '@/components/AdminNav'
+import AdminSidebar from '@/components/AdminSidebar'
 
-interface Murti {
-  id: number; name: string; nameMarathi: string | null
-  size: string; price: number; imageUrl: string; status: string
+interface Product {
+  id: number
+  productId: string
+  nameMarathi: string
+  name: string | null
+  height: string
+  price: number
+  status: string
+  featured: boolean
+  images: string[]
+}
+
+interface Category {
+  id: number
+  name: string
+  nameMarathi: string | null
+}
+
+interface GalleryItem {
+  id: number
+  url: string
+}
+
+interface Inquiry {
+  id: number
+  name: string
+  phone: string
+  productId: string | null
+  message: string | null
+  createdAt: string
+}
+
+function Spinner() {
+  return (
+    <svg className="animate-spin h-5 w-5 text-[var(--gold)]" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  )
 }
 
 export default function AdminDashboard() {
-  const [murtis, setMurtis]       = useState<Murti[]>([])
-  const [loading, setLoading]     = useState(true)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
-  const [togglingId, setTogglingId] = useState<number | null>(null)
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [gallery, setGallery] = useState<GalleryItem[]>([])
+  const [inquiries, setInquiries] = useState<Inquiry[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const fetchMurtis = async () => {
-    const res = await fetch('/api/murtis')
-    if (res.ok) setMurtis(await res.json())
-    setLoading(false)
-  }
-  useEffect(() => { fetchMurtis() }, [])
-
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`"${name}" हटवायचे आहे का?`)) return
-    setDeletingId(id)
-    await fetch(`/api/murtis/${id}`, { method: 'DELETE' })
-    setMurtis(p => p.filter(m => m.id !== id))
-    setDeletingId(null)
-  }
-
-  const handleToggle = async (murti: Murti) => {
-    setTogglingId(murti.id)
-    const newStatus = murti.status === 'AVAILABLE' ? 'OUT_OF_STOCK' : 'AVAILABLE'
-    const res = await fetch(`/api/murtis/${murti.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...murti, status: newStatus }),
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/products').then(r => r.json()).catch(() => []),
+      fetch('/api/categories').then(r => r.json()).catch(() => []),
+      fetch('/api/gallery').then(r => r.json()).catch(() => []),
+      fetch('/api/inquiries').then(r => r.json()).catch(() => []),
+    ]).then(([p, c, g, i]) => {
+      const parsedProducts = Array.isArray(p) ? p.map((prod: any) => ({
+        ...prod,
+        images: typeof prod.images === 'string' ? JSON.parse(prod.images || '[]') : (prod.images || []),
+      })) : []
+      setProducts(parsedProducts)
+      setCategories(Array.isArray(c) ? c : [])
+      setGallery(Array.isArray(g) ? g : [])
+      setInquiries(Array.isArray(i) ? i : [])
+      setLoading(false)
     })
-    if (res.ok) setMurtis(p => p.map(m => m.id === murti.id ? { ...m, status: newStatus } : m))
-    setTogglingId(null)
-  }
+  }, [])
 
-  const available  = murtis.filter(m => m.status === 'AVAILABLE').length
-  const outOfStock = murtis.filter(m => m.status === 'OUT_OF_STOCK').length
+  const available  = products.filter(p => p.status === 'AVAILABLE').length
+  const outOfStock = products.filter(p => p.status === 'OUT_OF_STOCK').length
+  const booked     = products.filter(p => p.status === 'BOOKED').length
+  const featured   = products.filter(p => p.featured).slice(0, 4)
+  const recentInq  = [...inquiries].reverse().slice(0, 5)
+
+  const statsMain = [
+    { label: 'एकूण मूर्ती',  value: products.length, bg: 'bg-[var(--maroon)]',  fg: 'text-white'       },
+    { label: 'उपलब्ध',       value: available,        bg: 'bg-green-700',        fg: 'text-white'       },
+    { label: 'संपले',        value: outOfStock,       bg: 'bg-red-700',          fg: 'text-white'       },
+    { label: 'बुक केले',     value: booked,           bg: 'bg-amber-600',        fg: 'text-white'       },
+  ]
+
+  const statsSecond = [
+    { label: 'प्रकार',       value: categories.length, icon: '📂' },
+    { label: 'गॅलरी',        value: gallery.length,    icon: '🖼️' },
+    { label: 'चौकशी',        value: inquiries.length,  icon: '📋' },
+  ]
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--cream)' }}>
-      <AdminNav />
+    <div className="flex min-h-screen bg-[var(--cream)]">
+      <AdminSidebar activeSection="dashboard" />
 
-      <main className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-
-        {/* ── Top bar ──────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
-
-          {/* Stats */}
-          <div className="flex gap-3">
-            {[
-              { n: murtis.length, label: 'एकूण', bg: 'bg-stone-900', fg: 'text-white' },
-              { n: available,     label: 'उपलब्ध', bg: 'bg-emerald-500', fg: 'text-white' },
-              { n: outOfStock,    label: 'संपले', bg: 'bg-stone-200', fg: 'text-stone-600' },
-            ].map(s => (
-              <div key={s.label} className={`${s.bg} ${s.fg} rounded-xl px-4 py-3 text-center min-w-[72px] border-2 border-black/10`}>
-                <div className="text-2xl font-black leading-none">{s.n}</div>
-                <div className="font-marathi text-xs opacity-80 mt-0.5">{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          <Link href="/admin/add" className="btn-primary">
-            ➕ नवीन मूर्ती जोडा
-          </Link>
+      <main className="flex-1 p-6 md:p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-[var(--burgundy)]">📊 डॅशबोर्ड</h1>
+          <p className="text-stone-500 text-sm mt-1">श्री सिद्धिविनायक गणपती स्टॉल — Overview</p>
         </div>
 
-        {/* ── Content ──────────────────── */}
         {loading ? (
           <div className="flex items-center justify-center py-24 gap-3 text-stone-400">
-            <svg className="animate-spin h-6 w-6 text-orange-500" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-            </svg>
+            <Spinner />
             <span className="font-semibold">लोड होत आहे...</span>
           </div>
-
-        ) : murtis.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-5 text-center border-2 border-dashed border-stone-200 rounded-3xl bg-white">
-            <div className="text-5xl">🪔</div>
-            <div>
-              <p className="font-marathi text-lg font-bold text-stone-600">अजून कोणतीही मूर्ती जोडलेली नाही</p>
-              <p className="text-stone-400 text-sm mt-1">पहिली मूर्ती जोडा आणि सुरुवात करा</p>
-            </div>
-            <Link href="/admin/add" className="btn-primary">➕ पहिली मूर्ती जोडा</Link>
-          </div>
-
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {murtis.map(murti => {
-              const isAvail = murti.status === 'AVAILABLE'
-              return (
-                <div key={murti.id} className="admin-card flex gap-4">
-
-                  {/* Thumb */}
-                  <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-stone-100 shrink-0 border-2 border-stone-200">
-                    <Image src={murti.imageUrl} alt={murti.nameMarathi || murti.name} fill className="object-cover" />
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-marathi font-bold text-stone-900 text-sm leading-tight truncate">
-                      {murti.nameMarathi || murti.name}
-                    </h3>
-                    {murti.nameMarathi && (
-                      <p className="text-xs text-stone-400 truncate">{murti.name}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-xs text-stone-500 font-medium">{murti.size}</span>
-                      <span className="font-bold text-orange-600 text-sm">₹{murti.price.toLocaleString('en-IN')}</span>
-                    </div>
-
-                    {/* Status toggle */}
-                    <button
-                      onClick={() => handleToggle(murti)}
-                      disabled={togglingId === murti.id}
-                      className={`mt-2 text-xs font-bold px-2.5 py-1 rounded-full border-2 transition-all disabled:opacity-50 ${
-                        isAvail
-                          ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-red-50 hover:border-red-300 hover:text-red-600'
-                          : 'bg-stone-100 border-stone-300 text-stone-500 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700'
-                      }`}
-                    >
-                      {togglingId === murti.id ? '...' : isAvail ? '✓ उपलब्ध' : '✕ संपले'}
-                    </button>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 shrink-0 justify-center">
-                    <Link href={`/admin/edit/${murti.id}`}
-                      className="text-xs font-semibold bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 text-orange-700 px-3 py-1.5 rounded-lg text-center transition-colors">
-                      ✏️
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(murti.id, murti.nameMarathi || murti.name)}
-                      disabled={deletingId === murti.id}
-                      className="text-xs font-semibold bg-red-50 hover:bg-red-100 border-2 border-red-200 text-red-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                      {deletingId === murti.id ? '...' : '🗑️'}
-                    </button>
-                  </div>
+          <>
+            {/* Main stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              {statsMain.map(s => (
+                <div key={s.label} className={`${s.bg} ${s.fg} rounded-2xl p-5 text-center border-2 border-black/10`}>
+                  <div className="text-4xl font-black">{s.value}</div>
+                  <div className="font-marathi text-sm opacity-80 mt-1">{s.label}</div>
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+
+            {/* Secondary stats */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {statsSecond.map(s => (
+                <div key={s.label} className="admin-card text-center py-5">
+                  <div className="text-2xl mb-1">{s.icon}</div>
+                  <div className="text-3xl font-black text-[var(--maroon)]">{s.value}</div>
+                  <div className="font-marathi text-sm text-stone-500 mt-1">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick actions */}
+            <div className="admin-card mb-8">
+              <h2 className="font-bold text-[var(--maroon)] mb-4 text-lg">⚡ त्वरित क्रिया</h2>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/admin/products/add" className="btn-gold">
+                  ➕ नवीन मूर्ती जोडा
+                </Link>
+                <Link href="/admin/gallery" className="btn-maroon">
+                  📸 Gallery मध्ये फोटो जोडा
+                </Link>
+              </div>
+            </div>
+
+            {/* Recent inquiries */}
+            <div className="admin-card mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-[var(--maroon)] text-lg">📋 अलीकडील चौकशी</h2>
+                <Link href="/admin/inquiries" className="text-sm text-[var(--gold)] font-semibold hover:underline">
+                  सर्व पाहा →
+                </Link>
+              </div>
+              {recentInq.length === 0 ? (
+                <p className="text-stone-400 text-sm text-center py-6">अजून कोणतीही चौकशी नाही.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-xs text-stone-400 uppercase border-b border-stone-100">
+                        <th className="pb-2 text-left font-semibold">नाव</th>
+                        <th className="pb-2 text-left font-semibold">फोन</th>
+                        <th className="pb-2 text-left font-semibold">Product ID</th>
+                        <th className="pb-2 text-left font-semibold">दिनांक</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentInq.map(inq => (
+                        <tr key={inq.id} className="border-b border-stone-50 hover:bg-stone-50">
+                          <td className="py-2.5 font-medium text-stone-800">{inq.name}</td>
+                          <td className="py-2.5 text-stone-600">{inq.phone}</td>
+                          <td className="py-2.5 text-stone-500 font-mono text-xs">{inq.productId || '—'}</td>
+                          <td className="py-2.5 text-stone-400 text-xs">
+                            {new Date(inq.createdAt).toLocaleDateString('mr-IN')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Featured products */}
+            {featured.length > 0 && (
+              <div className="admin-card">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-bold text-[var(--maroon)] text-lg">⭐ Featured मूर्ती</h2>
+                  <Link href="/admin/products" className="text-sm text-[var(--gold)] font-semibold hover:underline">
+                    सर्व पाहा →
+                  </Link>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {featured.map(p => (
+                    <div key={p.id} className="rounded-xl border-2 border-[var(--border)] p-3 text-center bg-[var(--gold-light)]/40">
+                      {p.images[0] && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.images[0]}
+                          alt={p.nameMarathi}
+                          className="w-16 h-16 object-cover rounded-lg mx-auto mb-2 border border-stone-200"
+                        />
+                      )}
+                      <p className="font-marathi text-xs font-bold text-stone-800 truncate">{p.nameMarathi}</p>
+                      <p className="text-xs text-[var(--gold)] font-bold mt-0.5">₹{p.price.toLocaleString('en-IN')}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

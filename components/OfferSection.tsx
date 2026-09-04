@@ -1,0 +1,48 @@
+interface Campaign {
+  id: number
+  offerTitle: string
+  offerText: string
+  offerSubtext?: string
+  offerCta: string
+}
+
+const WA1 = '9637153890'
+
+export default function OfferSection({ campaign }: { campaign: Campaign }) {
+  const waMessage = encodeURIComponent(
+    `🙏 नमस्कार श्री सिद्धिविनायक गणपती स्टॉल,\n\nमला आपल्या विशेष सवलत / ऑफरबद्दल माहिती हवी आहे.\nकृपया अधिक माहिती द्या.`
+  )
+
+  return (
+    <section className="bg-gradient-to-r from-[var(--gold)] via-[var(--gold-bright)] to-[var(--gold)] text-[var(--burgundy)] py-14 relative overflow-hidden shadow-inner border-y-4 border-[var(--maroon)]">
+      <div className="section-wrapper text-center relative z-10 max-w-3xl mx-auto space-y-4">
+        <span className="text-4xl inline-block animate-bounce">🎉</span>
+
+        <h2 className="font-marathi text-3xl md:text-4xl font-black tracking-tight text-[var(--burgundy)]">
+          {campaign.offerTitle}
+        </h2>
+
+        <p className="font-marathi text-xl md:text-2xl font-bold leading-snug text-[var(--maroon)]">
+          {campaign.offerText}
+        </p>
+
+        {campaign.offerSubtext && (
+          <p className="font-marathi text-sm font-semibold opacity-90 text-[var(--burgundy)]">
+            {campaign.offerSubtext}
+          </p>
+        )}
+
+        <div className="pt-3">
+          <a
+            href={`https://wa.me/91${WA1}?text=${waMessage}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-maroon text-base px-8 py-3.5 shadow-lg"
+          >
+            {campaign.offerCta || '📱 आजच बुकिंग करा'}
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}

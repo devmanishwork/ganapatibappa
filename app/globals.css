@@ -1,119 +1,158 @@
+/* ── Google Fonts ─────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 @reference "tailwindcss";
 
-/* ── Fonts ─────────────────────────────────────────── */
+/* ── Brand Tokens ─────────────────────────────────── */
 :root {
-  --font-space: var(--font-space, 'Space Grotesk', sans-serif);
-  --font-deva:  var(--font-devanagari, 'Noto Serif Devanagari', serif);
-
-  /* Brand colours */
-  --saffron:      #F4600C;
-  --saffron-dark: #C44A06;
-  --saffron-light:#FFF0E6;
-  --gold:         #E8A800;
-  --gold-light:   #FFF8E0;
-  --vermillion:   #CC2200;
-  --cream:        #FFFBF5;
-  --ink:          #0F0A00;
+  --maroon:       #4A0707;
+  --burgundy:     #260303;
+  --gold:         #D4A72C;
+  --gold-bright:  #F4C542;
+  --gold-light:   #FFF0BC;
+  --cream:        #FFF4D6;
+  --cream-dark:   #F5E6C0;
+  --ink:          #1E1E1E;
   --muted:        #6B5744;
-  --border:       #E8D5C0;
+  --border:       #E8CC88;
+  --available:    #16803A;
+  --oos:          #B42318;
+  --booked:       #B45309;
 }
 
-/* ── Base ───────────────────────────────────────────── */
+/* ── Base ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
-
 html { scroll-behavior: smooth; }
-
 body {
-  font-family: var(--font-space, 'Space Grotesk', sans-serif);
+  font-family: 'Space Grotesk', sans-serif;
   background: var(--cream);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
-
-/* Marathi text uses Devanagari font */
-.font-marathi {
-  font-family: var(--font-deva);
-}
-
-/* ── Scrollbar ──────────────────────────────────────── */
+.font-marathi { font-family: 'Noto Serif Devanagari', serif; }
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--cream); }
-::-webkit-scrollbar-thumb { background: var(--saffron); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 99px; }
 
-/* ── Buttons ────────────────────────────────────────── */
+/* ── Typography ───────────────────────────────────── */
 @layer components {
 
-  /* Primary — saffron fill */
-  .btn-primary {
+  .heading-marathi {
+    font-family: 'Noto Serif Devanagari', serif;
+    @apply font-bold text-[var(--maroon)] leading-snug;
+  }
+
+  /* ── Buttons ──────────────────────────────────── */
+  .btn-gold {
     @apply inline-flex items-center justify-center gap-2 font-bold tracking-wide
-           px-6 py-3 rounded-xl transition-all duration-150 select-none
-           bg-orange-600 text-white
-           border-2 border-orange-700
-           shadow-[4px_4px_0px_#7C2D00]
-           hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#7C2D00]
+           px-6 py-3 rounded-xl transition-all duration-200 select-none
+           bg-[var(--gold)] text-[var(--burgundy)]
+           border-2 border-[var(--gold)]
+           shadow-[4px_4px_0px_var(--maroon)]
+           hover:bg-[var(--gold-bright)]
+           hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_var(--maroon)]
            active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
   }
 
-  /* WhatsApp */
-  .btn-whatsapp {
+  .btn-maroon {
     @apply inline-flex items-center justify-center gap-2 font-bold tracking-wide
-           px-5 py-3 rounded-xl transition-all duration-150 select-none w-full
-           bg-green-500 text-white
-           border-2 border-green-700
+           px-6 py-3 rounded-xl transition-all duration-200 select-none
+           bg-[var(--maroon)] text-[var(--gold-bright)]
+           border-2 border-[var(--maroon)]
+           shadow-[4px_4px_0px_var(--burgundy)]
+           hover:bg-[var(--burgundy)]
+           hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_var(--burgundy)]
+           active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
+  }
+
+  .btn-whatsapp {
+    @apply inline-flex items-center justify-center gap-2 font-bold
+           px-5 py-3 rounded-xl transition-all duration-200 select-none
+           bg-green-600 text-white border-2 border-green-800
            shadow-[4px_4px_0px_#14532D]
+           hover:bg-green-700
            hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#14532D]
            active:translate-x-[4px] active:translate-y-[4px] active:shadow-none;
   }
 
-  /* Ghost */
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 font-semibold
-           px-5 py-2.5 rounded-xl transition-all duration-150
-           border-2 border-orange-300 text-orange-700
-           hover:bg-orange-50;
+  .btn-ghost-gold {
+    @apply inline-flex items-center justify-center gap-2 font-bold
+           px-6 py-3 rounded-xl transition-all duration-200
+           border-2 border-[var(--gold)] text-[var(--gold)]
+           hover:bg-[var(--gold)] hover:text-[var(--burgundy)];
   }
 
   /* ── Product Card ─────────────────────────────── */
-  .murti-card {
+  .product-card {
     @apply bg-white rounded-2xl overflow-hidden flex flex-col
-           border-2 border-stone-200
-           shadow-[6px_6px_0px_#D4B896]
+           border-2 border-[var(--border)]
+           shadow-[6px_6px_0px_var(--cream-dark)]
            transition-all duration-200
-           hover:shadow-[8px_8px_0px_#C4956A]
+           hover:shadow-[8px_8px_0px_var(--gold)]
            hover:-translate-y-0.5 hover:-translate-x-0.5;
   }
 
-  /* ── Status badges ────────────────────────────── */
+  /* ── Status Badges ────────────────────────────── */
   .badge-available {
-    @apply inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider
-           px-2.5 py-1 rounded-full
-           bg-emerald-500 text-white;
+    @apply inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider
+           px-3 py-1 rounded-full bg-green-100 text-green-800 border border-green-300;
+  }
+  .badge-oos {
+    @apply inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider
+           px-3 py-1 rounded-full bg-red-100 text-red-800 border border-red-300;
+  }
+  .badge-booked {
+    @apply inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider
+           px-3 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300;
   }
 
-  .badge-sold {
-    @apply inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider
-           px-2.5 py-1 rounded-full
-           bg-stone-700 text-stone-200;
+  /* ── Section wrapper ──────────────────────────── */
+  .section-wrapper {
+    @apply max-w-7xl mx-auto px-4 md:px-8;
+  }
+
+  .section-label {
+    @apply text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)];
+  }
+
+  /* ── Gold divider ─────────────────────────────── */
+  .gold-divider {
+    @apply w-16 h-1 bg-gradient-to-r from-[var(--gold)] to-[var(--gold-bright)] rounded-full;
   }
 
   /* ── Admin card ───────────────────────────────── */
   .admin-card {
     @apply bg-white rounded-xl border-2 border-stone-200 p-4
-           shadow-[4px_4px_0px_#D4B896]
-           transition-shadow hover:shadow-[6px_6px_0px_#C4956A];
+           shadow-[4px_4px_0px_#E8D5C0]
+           transition-shadow hover:shadow-[6px_6px_0px_var(--gold)];
   }
 
-  /* ── Input ────────────────────────────────────── */
   .field {
     @apply w-full border-2 border-stone-300 rounded-xl px-4 py-2.5 text-sm font-medium
            bg-white text-stone-800 placeholder:text-stone-400
-           focus:outline-none focus:border-orange-500 focus:ring-0
-           transition-colors duration-150;
+           focus:outline-none focus:border-[var(--gold)] transition-colors;
   }
+}
 
-  /* ── Section label ────────────────────────────── */
-  .section-label {
-    @apply text-xs font-bold uppercase tracking-[0.15em] text-orange-600;
-  }
+/* ── Gold border accent ───────────────────────────── */
+.gold-border-top {
+  border-top: 3px solid;
+  border-image: linear-gradient(to right, transparent, var(--gold), transparent) 1;
+}
+.gold-border-bottom {
+  border-bottom: 3px solid;
+  border-image: linear-gradient(to right, transparent, var(--gold), transparent) 1;
+}
+
+/* ── Announcement bar marquee ─────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 20s linear infinite; }
+
+/* ── Lightbox ─────────────────────────────────────── */
+.lightbox-overlay {
+  @apply fixed inset-0 bg-black/90 z-[100] flex items-center justify-center;
 }
