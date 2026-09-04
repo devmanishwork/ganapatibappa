@@ -1,31 +1,33 @@
+import { Award, Palette, Package, PhoneCall } from 'lucide-react'
+
 export default function WhyChooseUs() {
   const cards = [
     {
-      icon: '🪔',
+      icon: Award,
       title: 'दर्जेदार मूर्ती',
-      desc: 'आकर्षक आणि सुंदर मूर्तींची निवड. प्रत्येक मूर्ती उत्कृष्ट कारागिरांनी घडवलेली.',
+      desc: 'आकर्षक आणि सुंदर मूर्तींची निवड. प्रत्येक मूर्ती कुशल कारागिरांनी घडवलेली.',
     },
     {
-      icon: '🎨',
+      icon: Palette,
       title: 'सुंदर कलाकुसर',
-      desc: 'प्रत्येक मूर्तीमध्ये कलाकारीचा सुंदर स्पर्श आणि अप्रतिम रंगकाम.',
+      desc: 'प्रत्येक मूर्तीमध्ये अप्रतिम रंगकाम, बारीक नक्षीकाम आणि कलाकारीचा स्पर्श.',
     },
     {
-      icon: '📦',
+      icon: Package,
       title: 'विविध आकार',
-      desc: 'घरगुती तसेच मंडळाच्या गरजेनुसार विविध लहान-मोठे आकार उपलब्ध.',
+      desc: 'घरगुती पूजा तसेच मंडळाच्या गरजेनुसार ४ इंचांपासून ते मोठ्या आकारांपर्यंत उपलब्ध.',
     },
     {
-      icon: '📱',
+      icon: PhoneCall,
       title: 'त्वरित संपर्क',
-      desc: 'WhatsApp वर थेट आणि जलद संपर्क करून सहज बुकिंगची सुविधा.',
+      desc: 'WhatsApp वर थेट व जलद संपर्क करून आवडीची मूर्ती सहज बुक करण्याची सुविधा.',
     },
   ]
 
   return (
     <section className="bg-[var(--burgundy)] py-16 text-white relative overflow-hidden">
-      {/* Subtle background glow */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--maroon)] rounded-full blur-3xl opacity-50 pointer-events-none" />
+      {/* Background glow */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--maroon)] rounded-full blur-3xl opacity-40 pointer-events-none" />
 
       <div className="section-wrapper relative z-10">
         <div className="text-center mb-12">
@@ -37,22 +39,25 @@ export default function WhyChooseUs() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cards.map((card, i) => (
-            <div
-              key={i}
-              className="bg-white/5 border-2 border-[var(--gold)]/30 hover:border-[var(--gold)] rounded-2xl p-6 transition-all hover:-translate-y-1 hover:bg-white/10 flex flex-col gap-3 text-center"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-[var(--maroon)] border border-[var(--gold)]/40 flex items-center justify-center text-3xl mx-auto shadow-md">
-                {card.icon}
+          {cards.map((card, i) => {
+            const Icon = card.icon
+            return (
+              <div
+                key={i}
+                className="bg-white/5 border border-[var(--gold)]/30 hover:border-[var(--gold)] rounded-2xl p-6 transition-all hover:-translate-y-1 hover:bg-white/10 flex flex-col gap-3 text-center"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[var(--maroon)] border border-[var(--gold)]/40 flex items-center justify-center mx-auto shadow-md text-[var(--gold-bright)]">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <h3 className="font-marathi text-base font-bold text-[var(--gold-bright)]">
+                  {card.title}
+                </h3>
+                <p className="font-marathi text-xs leading-relaxed text-stone-300">
+                  {card.desc}
+                </p>
               </div>
-              <h3 className="font-marathi text-lg font-bold text-[var(--gold-bright)]">
-                {card.title}
-              </h3>
-              <p className="font-marathi text-xs leading-relaxed text-stone-300">
-                {card.desc}
-              </p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

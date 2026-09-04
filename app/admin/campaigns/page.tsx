@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Megaphone, Sparkles, Check, AlertCircle, Loader2, Save } from 'lucide-react'
 import AdminSidebar from '@/components/AdminSidebar'
 
 export default function CampaignsAdminPage() {
@@ -50,11 +51,11 @@ export default function CampaignsAdminPage() {
         }),
       })
       if (res.ok) {
-        setMessage('✅ माहिती यशस्वीरीत्या जतन केली!')
+        setMessage('माहिती यशस्वीरीत्या जतन केली!')
         setTimeout(() => setMessage(''), 4000)
       }
     } catch {
-      setMessage('⚠️ जतन करताना चूक झाली.')
+      setMessage('जतन करताना चूक झाली.')
     } finally {
       setSaving(false)
     }
@@ -65,9 +66,9 @@ export default function CampaignsAdminPage() {
       <AdminSidebar activeSection="campaigns" />
 
       <main className="flex-1 p-6 md:p-10 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="font-marathi text-2xl md:text-3xl font-bold text-[var(--maroon)]">
-            🎉 ऑफर व सूचना व्यवस्थापन (Campaigns)
+        <div className="mb-6">
+          <h1 className="font-marathi text-2xl font-bold text-[var(--maroon)]">
+            ऑफर व सूचना व्यवस्थापन (Campaigns)
           </h1>
           <p className="font-marathi text-xs text-[var(--muted)] mt-1">
             वेबसाइटच्या सर्वात वर दिसणारी सूचना पट्टी आणि होमपेजवरील खास सवलत / ऑफर सेक्शन संपादित करा.
@@ -75,97 +76,103 @@ export default function CampaignsAdminPage() {
         </div>
 
         {message && (
-          <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm font-semibold p-4 rounded-xl mb-6 shadow-sm">
-            {message}
+          <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold p-3.5 rounded-xl mb-5 shadow-xs flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>{message}</span>
           </div>
         )}
 
         {loading ? (
-          <div className="py-12 text-center text-stone-400 font-marathi">लोड होत आहे...</div>
+          <div className="py-12 text-center text-stone-400 font-marathi flex items-center justify-center gap-2">
+            <Loader2 className="animate-spin w-4 h-4" />
+            <span>लोड होत आहे...</span>
+          </div>
         ) : (
           <form onSubmit={handleSave} className="space-y-6">
             {/* Top Announcement Bar */}
             <div className="bg-white p-6 rounded-2xl border-2 border-stone-200 shadow-sm space-y-4">
-              <h2 className="font-marathi font-bold text-[var(--maroon)] text-base border-b pb-2">
-                📢 वरील सूचना पट्टी (Top Announcement Bar)
+              <h2 className="font-marathi font-bold text-[var(--maroon)] text-sm border-b pb-2 flex items-center gap-2">
+                <Megaphone className="w-4 h-4 text-[var(--gold)]" />
+                <span>वरील सूचना पट्टी (Top Announcement Bar)</span>
               </h2>
 
               <div>
-                <label className="section-label block mb-1">सूचना मजकूर (Announcement Text)</label>
+                <label className="section-label block mb-1 text-stone-700">सूचना मजकूर (Announcement Text)</label>
                 <input
                   type="text"
                   value={announcementText}
                   onChange={e => setAnnouncementText(e.target.value)}
                   placeholder="उदा. 10 सप्टेंबरपूर्वी बुकिंग करा आणि मिळवा खास सवलत!"
-                  className="field font-marathi"
+                  className="field font-marathi text-xs"
                 />
               </div>
 
               {/* Preview */}
-              <div className="bg-[#260303] text-[#F4C542] text-xs p-3 rounded-xl font-marathi">
+              <div className="bg-[#1c0202] text-[var(--gold-bright)] text-xs p-3 rounded-xl font-marathi">
                 <span className="opacity-60 text-[10px] block mb-1">पूर्वावलोकन (Live Preview):</span>
-                🙏 {announcementText || 'गणपती बाप्पा मोरया!'} 🙏
+                <span>{announcementText || 'गणपती बाप्पा मोरया!'}</span>
               </div>
             </div>
 
             {/* Special Offer Section */}
             <div className="bg-white p-6 rounded-2xl border-2 border-stone-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b pb-2">
-                <h2 className="font-marathi font-bold text-[var(--maroon)] text-base">
-                  🎁 विशेष सवलत सेक्शन (Special Offer Section)
+                <h2 className="font-marathi font-bold text-[var(--maroon)] text-sm flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[var(--gold)]" />
+                  <span>विशेष सवलत सेक्शन (Special Offer Section)</span>
                 </h2>
                 <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-bold font-marathi text-stone-700">
                   <input
                     type="checkbox"
                     checked={active}
                     onChange={e => setActive(e.target.checked)}
-                    className="w-4 h-4 accent-[var(--gold)]"
+                    className="w-4 h-4 accent-[var(--gold)] rounded"
                   />
-                  होमपेजवर दाखवा
+                  <span>होमपेजवर दाखवा</span>
                 </label>
               </div>
 
               <div>
-                <label className="section-label block mb-1">ऑफर शीर्षक (Heading)</label>
+                <label className="section-label block mb-1 text-stone-700">ऑफर शीर्षक (Heading)</label>
                 <input
                   type="text"
                   value={offerTitle}
                   onChange={e => setOfferTitle(e.target.value)}
-                  placeholder="उदा. 🎉 विशेष सवलत 🎉"
-                  className="field font-marathi"
+                  placeholder="उदा. विशेष सवलत ऑफर"
+                  className="field font-marathi text-xs"
                 />
               </div>
 
               <div>
-                <label className="section-label block mb-1">मुख्य ऑफर मजकूर (Main Text)</label>
+                <label className="section-label block mb-1 text-stone-700">मुख्य ऑफर मजकूर (Main Text)</label>
                 <textarea
                   rows={2}
                   value={offerText}
                   onChange={e => setOfferText(e.target.value)}
                   placeholder="उदा. 10 सप्टेंबरपूर्वी बुकिंग करा आणि मिळवा खास सवलत!"
-                  className="field font-marathi resize-none"
+                  className="field font-marathi text-xs resize-none"
                 />
               </div>
 
               <div>
-                <label className="section-label block mb-1">दुय्यम मजकूर (Subtext)</label>
+                <label className="section-label block mb-1 text-stone-700">दुय्यम मजकूर (Subtext)</label>
                 <input
                   type="text"
                   value={offerSubtext}
                   onChange={e => setOfferSubtext(e.target.value)}
                   placeholder="उदा. मर्यादित संख्येत मूर्ती उपलब्ध."
-                  className="field font-marathi"
+                  className="field font-marathi text-xs"
                 />
               </div>
 
               <div>
-                <label className="section-label block mb-1">बटणावरील मजकूर (CTA Button Text)</label>
+                <label className="section-label block mb-1 text-stone-700">बटणावरील मजकूर (CTA Button Text)</label>
                 <input
                   type="text"
                   value={offerCta}
                   onChange={e => setOfferCta(e.target.value)}
-                  placeholder="उदा. 📱 आजच बुकिंग करा"
-                  className="field font-marathi"
+                  placeholder="उदा. आजच बुकिंग करा"
+                  className="field font-marathi text-xs"
                 />
               </div>
             </div>
@@ -173,9 +180,19 @@ export default function CampaignsAdminPage() {
             <button
               type="submit"
               disabled={saving}
-              className="btn-gold py-3 px-8 text-sm font-bold shadow-md"
+              className="btn-gold py-3 px-7 text-xs font-bold shadow-sm flex items-center gap-2"
             >
-              {saving ? 'जतन करत आहे...' : '💾 बदल जतन करा (Save Changes)'}
+              {saving ? (
+                <>
+                  <Loader2 className="animate-spin w-4 h-4" />
+                  <span>जतन होत आहे...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>बदल जतन करा (Save Changes)</span>
+                </>
+              )}
             </button>
           </form>
         )}

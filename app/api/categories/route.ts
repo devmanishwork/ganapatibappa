@@ -1,14 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+const DEFAULT_CATEGORIES = [
+  { name: 'Small Murtis', nameMarathi: 'छोट्या मूर्ती', slug: 'small-murtis' },
+  { name: 'Medium Murtis', nameMarathi: 'मध्यम मूर्ती', slug: 'medium-murtis' },
+  { name: 'Large Murtis', nameMarathi: 'मोठ्या मूर्ती', slug: 'large-murtis' },
+  { name: 'Special Designs', nameMarathi: 'विशेष डिझाईन', slug: 'special-designs' },
+  { name: 'Household Ganapati', nameMarathi: 'घरगुती गणपती', slug: 'household-ganapati' },
+  { name: 'Mandal Murtis', nameMarathi: 'मंडळ मूर्ती', slug: 'mandal-murtis' },
+]
+
 export async function GET() {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { name: 'asc' },
+    let categories = await prisma.category.findMany({
+      orderBy: { id: 'asc' },
       include: { _count: { select: { products: true } } },
     })
+
+    // Auto-seed default categories if empty
+    if (categories.length === 0) {
+      await prisma.category.createMany({
+        data: DEFAULT_CATEGORIES,
+      })
+      categories = await prisma.category.findMany({
+        orderBy: { id: 'asc' },
+        include: { _count: { select: { products: true } } },
+      })
+    }
+
     return NextResponse.json(categories)
-  } catch { return NextResponse.json({ error: 'Failed' }, { status: 500 }) }
+  } catch {
+    return NextResponse.json({ error: 'Failed' }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {

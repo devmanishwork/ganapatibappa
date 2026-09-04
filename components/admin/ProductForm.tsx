@@ -1,8 +1,9 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { UploadCloud, CheckCircle2, Bookmark, XCircle, Star, Trash2, AlertCircle, Loader2 } from 'lucide-react'
 
 interface Category {
   id: number
@@ -13,7 +14,7 @@ interface Category {
 interface Product {
   id: number
   productId: string
-  nameMarathi: string
+  nameMarathi: string | null
   name: string | null
   description: string | null
   price: number
@@ -28,6 +29,27 @@ interface Props {
   isEdit: boolean
   initialData?: Product
 }
+
+const PRESET_SIZES = [
+  '4 इंच (4 Inch)',
+  '6 इंच (6 Inch)',
+  '8 इंच (8 Inch)',
+  '9 इंच (9 Inch)',
+  '10 इंच (10 Inch)',
+  '1 फूट (1 Ft)',
+  '1.25 फूट (1.25 Ft)',
+  '1.5 फूट (1.5 Ft)',
+  '1.75 फूट (1.75 Ft)',
+  '2 फूट (2 Ft)',
+  '2.5 फूट (2.5 Ft)',
+  '3 फूट (3 Ft)',
+  '3.5 फूट (3.5 Ft)',
+  '4 फूट (4 Ft)',
+  '4.5 फूट (4.5 Ft)',
+  '5 फूट (5 Ft)',
+  '6 फूट (6 Ft)',
+  'विशेष आकार (Custom Size)',
+]
 
 export default function ProductForm({ isEdit, initialData }: Props) {
   const router = useRouter()
@@ -44,7 +66,15 @@ export default function ProductForm({ isEdit, initialData }: Props) {
   const [nameEnglish, setNameEnglish] = useState(initialData?.name ?? '')
   const [description, setDescription] = useState(initialData?.description ?? '')
   const [price, setPrice] = useState(initialData?.price?.toString() ?? '')
-  const [height, setHeight] = useState(initialData?.height ?? '')
+  
+  // Height dropdown state
+  const initialHeight = initialData?.height ?? PRESET_SIZES[7]
+  const isCustomHeightInitial = !PRESET_SIZES.includes(initialHeight)
+  const [selectedSizeOption, setSelectedSizeOption] = useState(
+    isCustomHeightInitial ? 'विशेष आकार (Custom Size)' : initialHeight
+  )
+  const [customHeight, setCustomHeight] = useState(isCustomHeightInitial ? initialHeight : '')
+
   const [categoryId, setCategoryId] = useState(initialData?.categoryId?.toString() ?? '')
   const [status, setStatus] = useState<'AVAILABLE' | 'BOOKED' | 'OUT_OF_STOCK'>(initialData?.status ?? 'AVAILABLE')
   const [featured, setFeatured] = useState(initialData?.featured ?? false)
@@ -53,7 +83,9 @@ export default function ProductForm({ isEdit, initialData }: Props) {
   useEffect(() => {
     fetch('/api/categories')
       .then(r => r.json())
-      .then(setCategories)
+      .then(d => {
+        if (Array.isArray(d)) setCategories(d)
+      })
       .catch(() => {})
   }, [])
 
@@ -71,14 +103,14 @@ export default function ProductForm({ isEdit, initialData }: Props) {
     setError('')
     try {
       const formData = new FormData()
-      Array.from(files).forEach(f => formData.append('files', f))
+      Array.from(files).forEach(f => formData.append('file', f))
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) throw new Error('Upload failed')
       const data = await res.json()
       const urls: string[] = data.urls ?? (data.url ? [data.url] : [])
       setImages(prev => [...prev, ...urls])
     } catch {
-      setError('फोटो अपलोड करताना चूक झाली.')
+      setError('फोटो अपलोड करताना अडचण आली. कृपया पुन्हा प्रयत्न करा.')
     } finally {
       setUploading(false)
     }
@@ -97,18 +129,24 @@ export default function ProductForm({ isEdit, initialData }: Props) {
     e.preventDefault()
     setSubmitting(true)
     setError('')
+
+    const finalHeight = selectedSizeOption === 'विशेष आकार (Custom Size)'
+      ? (customHeight.trim() || 'विशेष आकार')
+      : selectedSizeOption
+
     const body = {
-      productId,
-      nameMarathi,
-      name: nameEnglish || null,
-      description: description || null,
+      productId: productId.trim(),
+      nameMarathi: nameMarathi.trim(),
+      name: nameEnglish.trim() || null,
+      description: description.trim() || null,
       price: parseFloat(price),
-      height,
+      height: finalHeight,
       categoryId: categoryId ? parseInt(categoryId) : null,
       status,
       featured,
       images,
     }
+
     try {
       const url = isEdit ? `/api/products/${initialData!.id}` : '/api/products'
       const method = isEdit ? 'PUT' : 'POST'
@@ -130,88 +168,59 @@ export default function ProductForm({ isEdit, initialData }: Props) {
   }
 
   const statusOptions = [
-    { value: 'AVAILABLE',    label: 'उपलब्ध',    emoji: '✅', bg: 'bg-green-50',  border: 'border-green-400',  text: 'text-green-800'  },
-    { value: 'BOOKED',       label: 'बुक केले',  emoji: '🔖', bg: 'bg-amber-50',  border: 'border-amber-400',  text: 'text-amber-800'  },
-    { value: 'OUT_OF_STOCK', label: 'संपले',     emoji: '❌', bg: 'bg-red-50',    border: 'border-red-400',    text: 'text-red-800'    },
+    { value: 'AVAILABLE', label: 'उपलब्ध (Available)', icon: CheckCircle2, bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-800' },
+    { value: 'BOOKED', label: 'बुक केलेले (Booked)', icon: Bookmark, bg: 'bg-amber-50', border: 'border-amber-500', text: 'text-amber-800' },
+    { value: 'OUT_OF_STOCK', label: 'संपले (Out of Stock)', icon: XCircle, bg: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-800' },
   ] as const
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-
       {error && (
-        <div className="bg-red-50 border-2 border-red-300 rounded-xl px-4 py-3 text-red-700 text-sm font-medium">
-          ⚠️ {error}
+        <div className="bg-rose-50 border-2 border-rose-300 rounded-xl px-4 py-3 text-rose-800 text-sm font-medium flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Row 1: Product ID + Marathi Name */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="section-label block mb-1.5">Product ID *</label>
+          <label className="section-label block mb-1.5 text-stone-700">मूर्ती आयडी (Product ID) *</label>
           <input
-            className="field"
+            className="field font-mono"
             value={productId}
             onChange={e => setProductId(e.target.value)}
-            placeholder="GNP-001"
+            placeholder="उदा. GNP-001"
             required
           />
         </div>
         <div>
-          <label className="section-label block mb-1.5">मराठी नाव *</label>
+          <label className="section-label block mb-1.5 text-stone-700">मराठी नाव *</label>
           <input
-            className="field font-marathi"
+            className="field font-marathi font-semibold"
             value={nameMarathi}
             onChange={e => setNameMarathi(e.target.value)}
-            placeholder="श्री सिद्धिविनायक गणपती"
+            placeholder="उदा. श्री सिद्धिविनायक बाप्पा"
             required
           />
         </div>
       </div>
 
-      {/* Row 2: English Name + Height */}
+      {/* Row 2: English Name + Category */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="section-label block mb-1.5">English Name</label>
+          <label className="section-label block mb-1.5 text-stone-700">English Name (Optional)</label>
           <input
             className="field"
             value={nameEnglish}
             onChange={e => setNameEnglish(e.target.value)}
-            placeholder="Shri Siddhivinayak Ganpati"
+            placeholder="e.g. Shree Siddhivinayak Bappa"
           />
         </div>
         <div>
-          <label className="section-label block mb-1.5">उंची *</label>
-          <input
-            className="field"
-            value={height}
-            onChange={e => setHeight(e.target.value)}
-            placeholder="3.5 फूट"
-            required
-          />
-        </div>
-      </div>
-
-      {/* Row 3: Price + Category */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="section-label block mb-1.5">किंमत (₹) *</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 font-bold">₹</span>
-            <input
-              type="number"
-              min="0"
-              className="field pl-7"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              placeholder="5000"
-              required
-            />
-          </div>
-        </div>
-        <div>
-          <label className="section-label block mb-1.5">प्रकार</label>
+          <label className="section-label block mb-1.5 text-stone-700">प्रकार (Category)</label>
           <select
-            className="field"
+            className="field font-marathi cursor-pointer"
             value={categoryId}
             onChange={e => setCategoryId(e.target.value)}
           >
@@ -225,83 +234,135 @@ export default function ProductForm({ isEdit, initialData }: Props) {
         </div>
       </div>
 
+      {/* Row 3: Height Dropdown & Price */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="section-label block mb-1.5 text-stone-700">आकार / उंची (Size / Height) *</label>
+          <select
+            className="field font-marathi cursor-pointer"
+            value={selectedSizeOption}
+            onChange={e => setSelectedSizeOption(e.target.value)}
+            required
+          >
+            {PRESET_SIZES.map(s => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+
+          {selectedSizeOption === 'विशेष आकार (Custom Size)' && (
+            <input
+              type="text"
+              className="field font-marathi mt-2"
+              placeholder="उदा. 7.5 फूट किंवा विशेष डिझाईन"
+              value={customHeight}
+              onChange={e => setCustomHeight(e.target.value)}
+              required
+            />
+          )}
+        </div>
+
+        <div>
+          <label className="section-label block mb-1.5 text-stone-700">किंमत (Price ₹) *</label>
+          <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500 font-bold">₹</span>
+            <input
+              type="number"
+              min="0"
+              className="field pl-8 font-semibold"
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              placeholder="5000"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Description */}
       <div>
-        <label className="section-label block mb-1.5">वर्णन</label>
+        <label className="section-label block mb-1.5 text-stone-700">मूर्तीचे वर्णन (Description)</label>
         <textarea
-          className="field min-h-[80px] resize-y"
+          className="field font-marathi min-h-[85px] resize-y"
           value={description}
           onChange={e => setDescription(e.target.value)}
-          placeholder="मूर्तीबद्दल अधिक माहिती..."
+          placeholder="मूर्तीचे वैशिष्ट्य, रंगकाम, सजावट इत्यादींची माहिती..."
           rows={3}
         />
       </div>
 
-      {/* Status */}
+      {/* Status Radio Badges */}
       <div>
-        <label className="section-label block mb-2">स्थिती *</label>
-        <div className="flex flex-wrap gap-3">
-          {statusOptions.map(opt => (
-            <label
-              key={opt.value}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all font-semibold text-sm ${
-                status === opt.value
-                  ? `${opt.bg} ${opt.border} ${opt.text} shadow-md`
-                  : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'
-              }`}
-            >
-              <input
-                type="radio"
-                name="status"
-                value={opt.value}
-                checked={status === opt.value}
-                onChange={() => setStatus(opt.value)}
-                className="hidden"
-              />
-              {opt.emoji} {opt.label}
-            </label>
-          ))}
+        <label className="section-label block mb-2 text-stone-700">उपलब्धता स्थिती (Availability Status) *</label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {statusOptions.map(opt => {
+            const Icon = opt.icon
+            const isSelected = status === opt.value
+            return (
+              <label
+                key={opt.value}
+                className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all font-semibold text-xs select-none ${
+                  isSelected
+                    ? `${opt.bg} ${opt.border} ${opt.text} shadow-sm ring-1 ring-offset-1`
+                    : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="status"
+                  value={opt.value}
+                  checked={isSelected}
+                  onChange={() => setStatus(opt.value)}
+                  className="hidden"
+                />
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="font-marathi">{opt.label}</span>
+              </label>
+            )
+          })}
         </div>
       </div>
 
-      {/* Featured */}
-      <div>
-        <label className="flex items-center gap-3 cursor-pointer select-none w-fit">
+      {/* Featured Checkbox */}
+      <div className="bg-[var(--cream)]/60 border border-[var(--border)] rounded-xl p-3.5">
+        <label className="flex items-center gap-3 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={featured}
             onChange={e => setFeatured(e.target.checked)}
-            className="w-5 h-5 accent-[var(--gold)] rounded"
+            className="w-4 h-4 accent-[var(--gold)] rounded cursor-pointer"
           />
-          <span className="font-semibold text-stone-700">⭐ होमपेजवर दाखवा</span>
+          <div className="flex items-center gap-1.5 text-sm font-bold font-marathi text-[var(--maroon)]">
+            <Star className={`w-4 h-4 ${featured ? 'fill-amber-500 text-amber-500' : 'text-stone-400'}`} />
+            <span>होमपेजवर प्रमुख मूर्ती म्हणून दाखवा (Featured)</span>
+          </div>
         </label>
       </div>
 
-      {/* Image upload */}
+      {/* Image Upload Area */}
       <div>
-        <label className="section-label block mb-2">फोटो</label>
+        <label className="section-label block mb-2 text-stone-700">मूर्तीचे फोटो (Product Photos)</label>
         <div
           onDrop={handleDrop}
           onDragOver={e => e.preventDefault()}
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-stone-300 rounded-xl p-6 text-center cursor-pointer hover:border-[var(--gold)] transition-colors bg-stone-50 hover:bg-[var(--gold-light)]/30"
+          className="border-2 border-dashed border-stone-300 hover:border-[var(--gold)] rounded-2xl p-7 text-center cursor-pointer transition-colors bg-stone-50 hover:bg-amber-50/40"
         >
           {uploading ? (
             <div className="flex flex-col items-center gap-2 text-stone-500">
-              <svg className="animate-spin h-8 w-8 text-[var(--gold)]" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              <span className="text-sm font-medium">अपलोड होत आहे...</span>
+              <Loader2 className="animate-spin h-7 w-7 text-[var(--gold)]" />
+              <span className="text-xs font-semibold font-marathi text-[var(--maroon)]">फोटो अपलोड होत आहेत...</span>
             </div>
           ) : (
-            <div className="text-stone-500">
-              <div className="text-3xl mb-2">📸</div>
-              <p className="font-semibold text-sm">फोटो येथे ड्रॅग करा किंवा क्लिक करा</p>
-              <p className="text-xs text-stone-400 mt-1">JPG, PNG, WEBP — अनेक फोटो एकत्र निवडा</p>
+            <div className="text-stone-500 flex flex-col items-center">
+              <UploadCloud className="w-9 h-9 text-[var(--gold)] mb-1.5" />
+              <p className="font-semibold font-marathi text-sm text-stone-700">फोटो निवडण्यासाठी येथे क्लिक करा किंवा ड्रॅग करा</p>
+              <p className="text-xs text-stone-400 mt-1">JPG, PNG, WEBP — एकापेक्षा जास्त फोटो निवडू शकता</p>
             </div>
           )}
         </div>
+
         <input
           ref={fileInputRef}
           type="file"
@@ -311,18 +372,19 @@ export default function ProductForm({ isEdit, initialData }: Props) {
           onChange={e => handleFileUpload(e.target.files)}
         />
 
-        {/* Image preview grid */}
+        {/* Uploaded Images Preview */}
         {images.length > 0 && (
-          <div className="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-2">
+          <div className="mt-3.5 grid grid-cols-4 sm:grid-cols-6 gap-2.5">
             {images.map((url, i) => (
-              <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border-2 border-stone-200">
-                <Image src={url} alt={`Image ${i + 1}`} width={80} height={80} className="object-cover w-full h-full" />
+              <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border-2 border-stone-200 bg-stone-100">
+                <Image src={url} alt={`Image ${i + 1}`} width={90} height={90} className="object-cover w-full h-full" />
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-600 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-rose-700"
+                  title="हटवा"
                 >
-                  ×
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             ))}
@@ -330,26 +392,31 @@ export default function ProductForm({ isEdit, initialData }: Props) {
         )}
       </div>
 
-      {/* Submit */}
-      <div className="pt-2">
+      {/* Action Buttons */}
+      <div className="flex items-center gap-3 pt-3">
         <button
           type="submit"
           disabled={submitting}
-          className="btn-gold disabled:opacity-60 disabled:cursor-not-allowed"
+          className="btn-gold flex-1 py-3 text-sm font-bold shadow-md disabled:opacity-60"
         >
           {submitting ? (
-            <>
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              जतन होत आहे...
-            </>
+            <div className="flex items-center gap-2">
+              <Loader2 className="animate-spin w-4 h-4" />
+              <span>जतन होत आहे...</span>
+            </div>
           ) : isEdit ? (
-            '💾 बदल जतन करा'
+            'बदल जतन करा (Save Changes)'
           ) : (
-            '✅ मूर्ती जोडा'
+            'मूर्ती जोडा (Add Murti)'
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push('/admin/products')}
+          className="btn-ghost-gold py-3 px-5 text-sm"
+        >
+          रद्द करा
         </button>
       </div>
     </form>

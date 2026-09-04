@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
+import { Image as ImageIcon, ZoomIn, X } from 'lucide-react'
 
 interface GalleryItem {
   id: number
@@ -15,9 +15,9 @@ export default function MasonryGallery({ images }: { images: GalleryItem[] }) {
   if (!images || images.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-[var(--border)] max-w-md mx-auto p-6">
-        <span className="text-4xl">📷</span>
-        <p className="font-marathi font-bold text-[var(--maroon)] mt-3">गॅलरी लवकरच उपलब्ध होईल</p>
-        <p className="font-marathi text-xs text-[var(--muted)] mt-1">स्टॉलवरील नवीन फोटोंसाठी लवकरच भेट द्या.</p>
+        <ImageIcon className="w-10 h-10 mx-auto text-stone-300" />
+        <p className="font-marathi font-bold text-[var(--maroon)] mt-2 text-sm">गॅलरी लवकरच उपलब्ध होईल</p>
+        <p className="font-marathi text-xs text-[var(--muted)] mt-0.5">स्टॉलवरील नवीन फोटोंसाठी लवकरच भेट द्या.</p>
       </div>
     )
   }
@@ -41,14 +41,16 @@ export default function MasonryGallery({ images }: { images: GalleryItem[] }) {
               />
             </div>
             {img.caption && (
-              <div className="p-2 bg-white text-center">
+              <div className="p-2.5 bg-white text-center border-t border-stone-100">
                 <p className="font-marathi text-xs font-semibold text-[var(--maroon)] truncate">
                   {img.caption}
                 </p>
               </div>
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <span className="text-white text-2xl">🔍</span>
+              <div className="w-10 h-10 rounded-full bg-white/30 backdrop-blur-xs flex items-center justify-center text-white">
+                <ZoomIn className="w-5 h-5" />
+              </div>
             </div>
           </div>
         ))}
@@ -62,9 +64,10 @@ export default function MasonryGallery({ images }: { images: GalleryItem[] }) {
         >
           <button
             onClick={() => setSelectedImg(null)}
-            className="absolute top-5 right-5 text-white text-3xl font-bold bg-white/20 hover:bg-white/40 w-12 h-12 rounded-full flex items-center justify-center transition-colors"
+            className="absolute top-5 right-5 text-white bg-white/15 hover:bg-white/30 w-11 h-11 rounded-full flex items-center justify-center transition-colors"
+            aria-label="Close"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
 
           <div
@@ -74,10 +77,10 @@ export default function MasonryGallery({ images }: { images: GalleryItem[] }) {
             <img
               src={selectedImg.url}
               alt={selectedImg.caption || 'गणपती मूर्ती'}
-              className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl border-2 border-[var(--gold)]"
+              className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border-2 border-[var(--gold)]"
             />
             {selectedImg.caption && (
-              <p className="font-marathi text-white text-center text-sm font-semibold mt-3 bg-black/60 px-4 py-2 rounded-full">
+              <p className="font-marathi text-white text-center text-xs md:text-sm font-semibold mt-3 bg-black/60 px-4 py-1.5 rounded-full border border-white/20">
                 {selectedImg.caption}
               </p>
             )}
